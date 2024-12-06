@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { View, Text, Pressable } from "react-native";
 import * as LocalAuthentication from "expo-local-authentication";
 import PINInput from "../../components/PINInput";
-import { getValueFor } from "../../utils";
+import { getValueFor, remove } from "../../utils";
 import styles from "./style";
 
 const AuthScreen = ({ navigation }) => {
@@ -11,7 +11,7 @@ const AuthScreen = ({ navigation }) => {
   const [failAttempts, setFailAttempts] = useState(0);
 
   useEffect(() => {
-    onAuth();
+    // onAuth();
   }, []);
 
   const onAuth = async () => {
@@ -29,6 +29,15 @@ const AuthScreen = ({ navigation }) => {
       console.log(error);
     }
   };
+
+  useEffect(() => {
+    if (!failAttempts) return;
+
+    if (failAttempts >= 3) {
+      remove("notes");
+      setFailAttempts(0);
+    }
+  }, [failAttempts]);
 
   const onComplete = async (pin) => {
     const pinFromSS = await getValueFor("pin");
@@ -53,7 +62,7 @@ const AuthScreen = ({ navigation }) => {
           <Text>Login</Text>
         </Pressable>
       )}
-      {showPinComponent && (
+      {!showPinComponent && (
         <PINInput onComplete={onComplete} pin={pin} setPin={setPin} />
       )}
     </View>
